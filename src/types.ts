@@ -123,6 +123,32 @@ export type RegistryImportResponse = z.infer<typeof RegistryImportResponseSchema
 export type ModelEntry = z.infer<typeof ModelEntrySchema>;
 
 // ============================================================================
+// list_experts
+// ============================================================================
+
+export const ListExpertsInputSchema = z.object({
+  format: z.enum(['full', 'names']).optional(),
+});
+
+export type ListExpertsInput = z.infer<typeof ListExpertsInputSchema>;
+
+const ExpertInfoSchema = z.object({
+  role: z.string(),
+  name: z.string(),
+  description: z.string(),
+  capabilities: z.array(z.string()),
+});
+
+export type ExpertInfo = z.infer<typeof ExpertInfoSchema>;
+
+export const ListExpertsResponseSchema = z.object({
+  experts: z.array(ExpertInfoSchema),
+  count: z.number(),
+});
+
+export type ListExpertsResponse = z.infer<typeof ListExpertsResponseSchema>;
+
+// ============================================================================
 // ToolCaller interface
 // ============================================================================
 

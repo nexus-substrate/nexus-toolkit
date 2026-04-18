@@ -2,7 +2,12 @@
  * Mock responses for nexus-toolkit tests.
  */
 
-import type { OrchestrateResponse, CatalogReviewResponse, RegistryImportResponse } from '../types.js';
+import type {
+  OrchestrateResponse,
+  CatalogReviewResponse,
+  RegistryImportResponse,
+  ListExpertsResponse,
+} from '../types.js';
 
 // ============================================================================
 // orchestrate
@@ -156,4 +161,56 @@ export const MOCK_IMPORT_OPENAI: RegistryImportResponse = {
   },
   persisted: false,
   warnings: ['Quality scores set to 5/10 (unvalidated) — needs human review.'],
+};
+
+// ============================================================================
+// list_experts
+// ============================================================================
+
+export const MOCK_LIST_EXPERTS_FULL: ListExpertsResponse = {
+  experts: [
+    {
+      role: 'code_expert',
+      name: 'Code Expert',
+      description: 'Senior engineer specializing in production code quality and correctness.',
+      capabilities: ['code_review', 'refactoring', 'debugging'],
+    },
+    {
+      role: 'security_expert',
+      name: 'Security Expert',
+      description: 'Security engineer focused on threat modeling and secure design.',
+      capabilities: ['threat_modeling', 'vulnerability_analysis', 'secure_coding'],
+    },
+    {
+      role: 'testing_expert',
+      name: 'Testing Expert',
+      description: 'Test engineer focused on coverage, edge cases, and regression prevention.',
+      capabilities: ['test_writing', 'coverage_analysis'],
+    },
+  ],
+  count: 3,
+};
+
+export const MOCK_LIST_EXPERTS_NAMES: ListExpertsResponse = {
+  experts: [
+    { role: 'code_expert', name: 'Code Expert', description: 'Senior engineer.', capabilities: [] },
+    {
+      role: 'security_expert',
+      name: 'Security Expert',
+      description: 'Security engineer.',
+      capabilities: [],
+    },
+    {
+      role: 'testing_expert',
+      name: 'Testing Expert',
+      description: 'Test engineer.',
+      capabilities: [],
+    },
+  ],
+  count: 3,
+};
+
+export const MOCK_LIST_EXPERTS_EMPTY: ListExpertsResponse = {
+  experts: [],
+  count: 0,
 };

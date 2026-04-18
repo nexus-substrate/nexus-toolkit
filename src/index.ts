@@ -12,6 +12,8 @@ export {
   CatalogReviewResponseSchema,
   RegistryImportInputSchema,
   RegistryImportResponseSchema,
+  ListExpertsInputSchema,
+  ListExpertsResponseSchema,
 } from './types.js';
 
 export type {
@@ -19,6 +21,9 @@ export type {
   CatalogReviewResponse,
   RegistryImportResponse,
   ModelEntry,
+  ListExpertsInput,
+  ListExpertsResponse,
+  ExpertInfo,
   ToolCaller,
   ToolTestResult,
   ToolkitAudit,

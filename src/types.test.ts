@@ -10,6 +10,8 @@ import {
   CatalogReviewResponseSchema,
   RegistryImportInputSchema,
   RegistryImportResponseSchema,
+  ListExpertsInputSchema,
+  ListExpertsResponseSchema,
 } from './types.js';
 import {
   MOCK_ORCHESTRATE_SUCCESS,
@@ -24,6 +26,9 @@ import {
   MOCK_IMPORT_DRY_RUN,
   MOCK_IMPORT_GOOGLE,
   MOCK_IMPORT_OPENAI,
+  MOCK_LIST_EXPERTS_FULL,
+  MOCK_LIST_EXPERTS_NAMES,
+  MOCK_LIST_EXPERTS_EMPTY,
 } from './fixtures/mock-responses.js';
 
 // ============================================================================
@@ -225,5 +230,89 @@ describe('RegistryImportResponseSchema', () => {
       expect(r.success).toBe(true);
       if (r.success) expect(r.data.entry.cliName).toBe(cli);
     }
+  });
+});
+
+// ============================================================================
+// list_experts
+// ============================================================================
+
+describe('ListExpertsInputSchema', () => {
+  it('accepts empty input', () => {
+    expect(ListExpertsInputSchema.safeParse({}).success).toBe(true);
+  });
+
+  it('accepts format=full', () => {
+    expect(ListExpertsInputSchema.safeParse({ format: 'full' }).success).toBe(true);
+  });
+
+  it('accepts format=names', () => {
+    expect(ListExpertsInputSchema.safeParse({ format: 'names' }).success).toBe(true);
+  });
+
+  it('rejects invalid format value', () => {
+    expect(ListExpertsInputSchema.safeParse({ format: 'verbose' }).success).toBe(false);
+  });
+
+  it('rejects non-string format', () => {
+    expect(ListExpertsInputSchema.safeParse({ format: 42 }).success).toBe(false);
+  });
+});
+
+describe('ListExpertsResponseSchema', () => {
+  it('parses full response with capabilities', () => {
+    const r = ListExpertsResponseSchema.safeParse(MOCK_LIST_EXPERTS_FULL);
+    expect(r.success).toBe(true);
+    if (r.success) {
+      expect(r.data.count).toBe(3);
+      expect(r.data.experts).toHaveLength(3);
+      expect(r.data.experts[0]?.capabilities.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('parses names-format response with empty capabilities', () => {
+    const r = ListExpertsResponseSchema.safeParse(MOCK_LIST_EXPERTS_NAMES);
+    expect(r.success).toBe(true);
+    if (r.success) {
+      expect(r.data.count).toBe(3);
+      expect(r.data.experts[0]?.capabilities).toHaveLength(0);
+    }
+  });
+
+  it('parses empty response', () => {
+    const r = ListExpertsResponseSchema.safeParse(MOCK_LIST_EXPERTS_EMPTY);
+    expect(r.success).toBe(true);
+    if (r.success) {
+      expect(r.data.count).toBe(0);
+      expect(r.data.experts).toHaveLength(0);
+    }
+  });
+
+  it('validates expert info fields', () => {
+    const r = ListExpertsResponseSchema.safeParse(MOCK_LIST_EXPERTS_FULL);
+    expect(r.success).toBe(true);
+    if (r.success) {
+      const expert = r.data.experts[0];
+      expect(expert).toBeDefined();
+      if (expert) {
+        expect(expert.role).toBe('code_expert');
+        expect(expert.name).toBe('Code Expert');
+        expect(expert.description.length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('rejects response missing count', () => {
+    expect(
+      ListExpertsResponseSchema.safeParse({ experts: [] }).success
+    ).toBe(false);
+  });
+
+  it('rejects expert missing role field', () => {
+    const bad = {
+      experts: [{ name: 'X', description: 'd', capabilities: [] }],
+      count: 1,
+    };
+    expect(ListExpertsResponseSchema.safeParse(bad).success).toBe(false);
   });
 });
