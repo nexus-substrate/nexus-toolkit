@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/williamzujkowski/nexus-toolkit.git"
+    "url": "https://github.com/nexus-substrate/nexus-toolkit.git"
   },
   "keywords": [
     "nexus-agents",
