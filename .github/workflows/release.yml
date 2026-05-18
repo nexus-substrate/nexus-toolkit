@@ -1,0 +1,45 @@
+name: Release
+
+# Publishes the package to npm on tag push (e.g., `git tag v1.2.0 && git push --tags`).
+# Also exposes a workflow_dispatch trigger for manual publication from main.
+#
+# Auth: npm trusted publishing via OIDC. No long-lived NPM_TOKEN required.
+# One-time setup on npm (after initial bootstrap publish): Settings → Trusted Publishers → Add publisher
+#   - Publisher: GitHub Actions
+#   - Organization: nexus-substrate
+#   - Repository: nexus-toolkit
+#   - Workflow filename: release.yml
+# After that, `id-token: write` + `npm publish --provenance` authenticates
+# via the workflow's OIDC token and signs the artifact via Sigstore.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # OIDC auth to npm + Sigstore provenance signing
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: pnpm/action-setup@b307475762933b98ed359c036b0e51f26b63b74b # v5.0.0
+        with:
+          version: 9
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          # Node 24 LTS ships with npm 11.x, which natively supports OIDC
+          # trusted publishing (npm 10.x didn't — that was the silent
+          # `E404 'not in this registry'` cause that wasted hours during
+          # the nexus-eval-atbench 0.1.x bootstrap in May 2026).
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - run: npm publish --provenance --access public
