@@ -1,6 +1,6 @@
 # nexus-toolkit
 
-E2E test suite for [nexus-agents](https://github.com/williamzujkowski/nexus-agents) MCP tools: **orchestrate**, **research_catalog_review**, and **registry_import**.
+E2E test suite for [nexus-agents](https://github.com/nexus-substrate/nexus-agents) MCP tools: **orchestrate**, **research_catalog_review**, and **registry_import**.
 
 ## What it tests
 
