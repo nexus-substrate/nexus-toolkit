@@ -38,6 +38,10 @@ function formatText(a: ToolkitAudit): string {
   return lines.join('\n');
 }
 
+function markdownCell(value: string): string {
+  return value.replace(/\r?\n/g, ' ').replace(/\|/g, '\\|');
+}
+
 function formatMarkdown(a: ToolkitAudit): string {
   const lines = [
     '# Toolkit Audit',
@@ -56,8 +60,8 @@ function formatMarkdown(a: ToolkitAudit): string {
     '| --- | --- | --- | --- |',
   ];
   for (const r of a.results) {
-    const err = r.error ?? '';
-    lines.push(`| ${r.tool} | ${r.status} | ${r.durationMs}ms | ${err} |`);
+    const err = markdownCell(r.error ?? '');
+    lines.push(`| ${markdownCell(r.tool)} | ${r.status} | ${r.durationMs}ms | ${err} |`);
   }
   return lines.join('\n');
 }

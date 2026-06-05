@@ -46,6 +46,26 @@ describe('generateReport', () => {
     it('defaults to markdown', () => {
       expect(generateReport(SAMPLE_AUDIT)).toContain('# Toolkit Audit');
     });
+
+    it('escapes markdown table separators in tool and error cells', () => {
+      const report = generateReport({
+        results: [
+          {
+            tool: 'registry|import',
+            status: 'fail',
+            error: 'Schema mismatch: expected foo|bar\nreceived baz',
+            durationMs: 100,
+          },
+        ],
+        passed: 0,
+        failed: 1,
+        skipped: 0,
+      });
+
+      expect(report).toContain(
+        '| registry\\|import | fail | 100ms | Schema mismatch: expected foo\\|bar received baz |',
+      );
+    });
   });
 
   describe('json', () => {
