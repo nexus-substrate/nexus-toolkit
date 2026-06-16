@@ -29,8 +29,16 @@ export async function testOrchestrate(
     return { tool: 'orchestrate', status: 'pass', response: parsed.data, durationMs: Date.now() - start };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    // Orchestrate commonly fails without model adapters — mark as skip
-    if (msg.includes('not idle') || msg.includes('not configured') || msg.includes('failed')) {
+    // Orchestrate is not-applicable when no model adapter is configured/available.
+    // Match only those specific signals — NOT the generic word "failed", which
+    // appears in many genuine errors (e.g. "orchestration failed: adapter timeout")
+    // that must stay `fail` so the audit surfaces real regressions.
+    if (
+      msg.includes('not idle') ||
+      msg.includes('not configured') ||
+      msg.includes('no adapter') ||
+      msg.includes('no model adapter')
+    ) {
       return { tool: 'orchestrate', status: 'skip', error: msg, durationMs: Date.now() - start };
     }
     return { tool: 'orchestrate', status: 'fail', error: msg, durationMs: Date.now() - start };

@@ -76,6 +76,24 @@ describe('testOrchestrate', () => {
     expect(result.status).toBe('fail');
     expect(result.error).toBe('Network timeout');
   });
+
+  it('returns fail (not skip) for genuine errors whose message contains "failed"', async () => {
+    const caller: ToolCaller = {
+      call: async () => { throw new Error('orchestration failed: adapter timeout'); },
+    };
+    const result = await testOrchestrate(caller, 'Test');
+    expect(result.status).toBe('fail');
+    expect(result.error).toBe('orchestration failed: adapter timeout');
+  });
+
+  it('returns skip when no adapter is available', async () => {
+    const caller: ToolCaller = {
+      call: async () => { throw new Error('no model adapter available'); },
+    };
+    const result = await testOrchestrate(caller, 'Test');
+    expect(result.status).toBe('skip');
+    expect(result.error).toContain('no model adapter');
+  });
 });
 
 // ---------------------------------------------------------------------------
