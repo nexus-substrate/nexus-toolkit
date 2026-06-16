@@ -6,6 +6,13 @@ import type { ToolkitAudit } from './types.js';
 
 export type ReportFormat = 'markdown' | 'json' | 'text';
 
+export const REPORT_FORMATS: readonly ReportFormat[] = ['markdown', 'json', 'text'];
+
+/** Type guard: is `value` one of the supported report formats? */
+export function isReportFormat(value: unknown): value is ReportFormat {
+  return typeof value === 'string' && (REPORT_FORMATS as readonly string[]).includes(value);
+}
+
 export function generateReport(
   audit: ToolkitAudit,
   format: ReportFormat = 'markdown',
@@ -17,6 +24,13 @@ export function generateReport(
       return formatText(audit);
     case 'markdown':
       return formatMarkdown(audit);
+    default:
+      // `format` is typed `ReportFormat`, but callers can force-cast an
+      // arbitrary string (e.g. from an env var). Fail loudly instead of
+      // returning `undefined` and printing the literal "undefined".
+      throw new Error(
+        `Unknown report format: ${String(format)}. Expected one of: ${REPORT_FORMATS.join(', ')}`,
+      );
   }
 }
 

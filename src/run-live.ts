@@ -12,9 +12,8 @@
  */
 
 import { runToolkitAudit } from './pipeline.js';
-import { generateReport } from './reporter.js';
+import { generateReport, isReportFormat, REPORT_FORMATS } from './reporter.js';
 import { isLiveMode } from './live-caller.js';
-import type { ReportFormat } from './reporter.js';
 import type { ToolCaller } from './types.js';
 
 async function main(): Promise<void> {
@@ -47,8 +46,14 @@ async function main(): Promise<void> {
   console.log('Running toolkit audit against live MCP server...\n');
   const audit = await runToolkitAudit(caller);
 
-  const format = (process.env['REPORT_FORMAT'] ?? 'text') as ReportFormat;
-  console.log(generateReport(audit, format));
+  const rawFormat = process.env['REPORT_FORMAT'] ?? 'text';
+  if (!isReportFormat(rawFormat)) {
+    console.error(
+      `Invalid REPORT_FORMAT: "${rawFormat}". Expected one of: ${REPORT_FORMATS.join(', ')}.`,
+    );
+    process.exit(1);
+  }
+  console.log(generateReport(audit, rawFormat));
 
   process.exit(audit.failed > 0 ? 1 : 0);
 }

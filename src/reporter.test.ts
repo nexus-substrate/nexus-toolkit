@@ -3,7 +3,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateReport } from './reporter.js';
+import { generateReport, isReportFormat } from './reporter.js';
+import type { ReportFormat } from './reporter.js';
 import type { ToolkitAudit } from './types.js';
 
 const SAMPLE_AUDIT: ToolkitAudit = {
@@ -87,6 +88,29 @@ describe('generateReport', () => {
       const report = generateReport(SKIP_AUDIT, 'text');
       expect(report).toContain('SKIP orchestrate');
       expect(report).toContain('No adapter');
+    });
+  });
+
+  describe('unknown format', () => {
+    it('throws instead of returning undefined', () => {
+      // Force-cast an arbitrary value, mirroring an unvalidated env var.
+      expect(() => generateReport(SAMPLE_AUDIT, 'yaml' as ReportFormat)).toThrow(
+        /Unknown report format: yaml/,
+      );
+    });
+  });
+
+  describe('isReportFormat', () => {
+    it('accepts the known formats', () => {
+      expect(isReportFormat('markdown')).toBe(true);
+      expect(isReportFormat('json')).toBe(true);
+      expect(isReportFormat('text')).toBe(true);
+    });
+
+    it('rejects unknown values', () => {
+      expect(isReportFormat('yaml')).toBe(false);
+      expect(isReportFormat('')).toBe(false);
+      expect(isReportFormat(undefined)).toBe(false);
     });
   });
 });
