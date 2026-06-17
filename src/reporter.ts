@@ -53,7 +53,16 @@ function formatText(a: ToolkitAudit): string {
 }
 
 function markdownCell(value: string): string {
-  return value.replace(/\r?\n/g, ' ').replace(/\|/g, '\\|');
+  // Escape the backslash FIRST so we never double-process the escapes we add
+  // below, and so a literal backslash in the input can't combine with the
+  // following character to break out of the table cell (e.g. a trailing `\`
+  // escaping the real `|` column delimiter, or an input `\|` surviving
+  // unescaped). Then collapse newlines and escape the cell separator. Every
+  // dangerous character is replaced globally so all occurrences are handled.
+  return value
+    .replace(/\\/g, '\\\\')
+    .replace(/\r?\n/g, ' ')
+    .replace(/\|/g, '\\|');
 }
 
 function formatMarkdown(a: ToolkitAudit): string {
