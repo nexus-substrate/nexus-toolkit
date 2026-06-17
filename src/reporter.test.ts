@@ -67,6 +67,45 @@ describe('generateReport', () => {
         '| registry\\|import | fail | 100ms | Schema mismatch: expected foo\\|bar received baz |',
       );
     });
+
+    it('fully escapes every pipe and pre-existing backslash so the cell cannot break out', () => {
+      // Multiple pipes plus backslashes that, without escaping the backslash
+      // first, would let `\|` survive unescaped or let a trailing `\` escape
+      // the real column delimiter and break the markdown table structure.
+      const report = generateReport({
+        results: [
+          {
+            tool: 'a|b|c',
+            status: 'fail',
+            error: 'path C:\\tmp\\x and an already-escaped \\| plus a trailing \\',
+            durationMs: 100,
+          },
+        ],
+        passed: 0,
+        failed: 1,
+        skipped: 0,
+      });
+
+      const resultRow = report.split('\n').find((l) => l.startsWith('| a'));
+      expect(resultRow).toBeDefined();
+
+      // All three pipes from the tool name are escaped (none left bare).
+      expect(resultRow).toContain('| a\\|b\\|c | fail |');
+
+      // Every backslash in the input is doubled and every pipe escaped, so the
+      // already-escaped `\|` becomes `\\\|` (escaped backslash + escaped pipe)
+      // rather than surviving as a bare `\|`, and the trailing backslash is
+      // doubled so it cannot escape the closing delimiter.
+      expect(resultRow).toContain(
+        'path C:\\\\tmp\\\\x and an already-escaped \\\\\\| plus a trailing \\\\ |',
+      );
+
+      // No bare (unescaped, odd-count) backslash-pipe or unescaped pipe leaks
+      // into the cell body: the row must split into exactly the table columns.
+      // 4 columns => 5 cell boundaries (leading + 3 internal + trailing).
+      const bareDelimiters = (resultRow ?? '').match(/(^|[^\\])(\\\\)*\|/g) ?? [];
+      expect(bareDelimiters.length).toBe(5);
+    });
   });
 
   describe('json', () => {
